@@ -17,31 +17,7 @@ positive_sample = data.loc[(data['label'] == 1)]
 url = positive_sample['key']
 n = len(url)
     
-#find optimal threshold T for random forest to mark as key
-
-def Find_Optimal_Parameters(max_thres, min_thres, R_sum, train_negative, positive_sample):
-    FP_opt = train_negative.shape[0]
-
-    for threshold in np.arange(min_thres, max_thres+10**(-6), 0.01):
-        url = positive_sample.loc[(positive_sample['score'] <= threshold),'key']
-        n = len(url)
-        bloom_filter = BloomFilter(n, R_sum)
-        for u in url:
-            bloom_filter.insert(u)
-        ML_positive = train_negative.loc[(train_negative['score'] > threshold),'key']
-        bloom_negative = train_negative.loc[(train_negative['score'] <= threshold),'key']
-        BF_positive = 0
-        for i in bloom_negative:
-            BF_positive += bloom_filter.test(i)
-        FP_items = BF_positive + len(ML_positive)
-        if FP_opt > FP_items:
-            FP_opt = FP_items
-            thres_opt = threshold
-            bloom_filter_opt = bloom_filter
-
-    return thres_opt, bloom_filter_opt
-
-max_items = len(data)
+#optimize BF and threshold T
 def find_optimal_params(max_thresh, min_thresh, size, neg_sample):
     fp_opt = neg_sample.shape[0]
     
